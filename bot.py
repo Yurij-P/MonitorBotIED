@@ -30,11 +30,15 @@ async def check_object(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.message.text.lower()
     matches = df[df["Об'єкт"].str.lower().str.contains(query, na=False)]
     if not matches.empty:
-        results = "\n\n".join([f"🏗 {row["Об'єкт"]}\n👀 Моніторинг: {row["Хто здійснює моніторинг"]}" for _, row in matches.head(3).iterrows()])
-        await update.message.reply_text(f"✅ Знайдено:\n\n{results}")
+        results = []
+for _, row in matches.head(3).iterrows():
+    obj = row["Об'єкт"]
+    monitor = row["Хто здійснює моніторинг"]
+    text = f"🏗 {obj}\n👀 Моніторинг: {monitor}"
+    results.append(text)
+await update.message.reply_text("✅ Знайдено:\n\n" + "\n\n".join(results))
     else:
         await update.message.reply_text("❌ Об'єкт не знайдено у базі моніторингу.")
-
 async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global df
     user_id = update.effective_user.id
