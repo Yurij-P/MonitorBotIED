@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: monitor-bot-ied
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python bot.py"
+    envVars:
+      - key: BOT_TOKEN
+        value: 8160923025:AAFTzwuZbAFJiN83x6xdW_qBFSA06RX8TL4
+      - key: ADMIN_IDS
+        value: 522223534,342445163
