@@ -44,18 +44,19 @@ async def check_object(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     query = update.message.text.lower()
     matches = df[df["Об'єкт"].astype(str).str.lower().str.contains(query, na=False)]
-
     if not matches.empty:
-        results = []
-        for _, row in matches.head(3).iterrows():
-        result = f"Об’єкт: {row['Обʼєкт']}"
-Область: {}
-Конкурс: {}
-Моніторинг: {}".format(
-                row["Об'єкт"],
-                row["Область"],
-                row["Конкурс (1 - відновлення, 2 закупівлі)"],
-                row["Хто здійснює моніторинг"]
+    results = []
+    for _, row in matches.head(3).iterrows():
+        result = (
+    f"🏗 Обʼєкт: {row['Обʼєкт']}\n"
+    f"📍 Область: {row['Область']}\n"
+    f"🏛 Конкурс: {row['Конкурс (1 – відновлення, 2 закупівлі)']}\n"
+    f"👀 Моніторинг: {row['Хто здійснює моніторинг']}"
+)
+
+    await update.message.reply_text(f"🔎 Знайдено:\n\n" + "\n\n".join(results))
+else:
+    await update.message.reply_text("❌ Обʼєкт не знайдено в таблиці.")
             )
             results.append(result)
         await update.message.reply_text("🔍 Знайдено:
