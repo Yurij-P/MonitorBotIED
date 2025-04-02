@@ -49,7 +49,6 @@ async def check_object(update: Update, context: ContextTypes.DEFAULT_TYPE):
         results = []
         for _, row in matches.head(3).iterrows():
         result = f"Об’єкт: {row['Обʼєкт']}"
-)
 Область: {}
 Конкурс: {}
 Моніторинг: {}".format(
