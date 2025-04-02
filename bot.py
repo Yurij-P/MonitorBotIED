@@ -7,14 +7,22 @@ from telegram.error import NetworkError
 import asyncio
 
 warnings.filterwarnings("ignore", category=UserWarning)
+
 ADMIN_IDS = list(map(int, os.getenv("ADMIN_IDS", "").split(",")))
+df = pd.DataFrame()
 
 def load_data():
     try:
-        data = pd.read_excel("monitoring.xlsx", skiprows=2)
-        return data[data["Об'єкт"].notna()]
+        data = pd.read_excel("monitoring.xlsx")
+        required_cols = ["Об'єкт", "Область", "Конкурс (1 - відновлення, 2 закупівлі)", "Хто здійснює моніторинг"]
+        if all(col in data.columns for col in required_cols):
+            print("✅ Таблиця успішно завантажена")
+            return data[data["Об'єкт"].notna()]
+        else:
+            print("❌ Відсутні потрібні колонки в таблиці")
+            return pd.DataFrame()
     except Exception as e:
-        print("❌ Excel помилка:", e)
+        print("❌ Помилка при зчитуванні таблиці:", e)
         return pd.DataFrame()
 
 df = load_data()
@@ -27,16 +35,22 @@ async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def check_object(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global df
+    if df.empty:
+        await update.message.reply_text("⚠️ База ще не завантажена. Надішліть Excel-файл.")
+        return
+
     query = update.message.text.lower()
     matches = df[df["Об'єкт"].str.lower().str.contains(query, na=False)]
+
     if not matches.empty:
         results = []
-        for _, row in matches.head(3).iterrows():
+        for _, row in matches.iterrows():
             obj = row["Об'єкт"]
+            oblast = row["Область"]
+            contest = row["Конкурс (1 - відновлення, 2 закупівлі)"]
             monitor = row["Хто здійснює моніторинг"]
-            text = f"🏗 {obj}\n👀 Моніторинг: {monitor}"
-            results.append(text)
-        await update.message.reply_text("✅ Знайдено:\n\n" + "\n\n".join(results))
+            results.append(f"🏗 {obj}\n📍 {oblast}\n📊 Конкурс: {contest}\n👀 Моніторинг: {monitor}")
+        await update.message.reply_text("✅ Знайдено:\n\n" + "\n\n".join(results[:3]))
     else:
         await update.message.reply_text("❌ Об'єкт не знайдено у базі моніторингу.")
 
@@ -46,15 +60,23 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user_id not in ADMIN_IDS:
         await update.message.reply_text("🚫 У вас немає прав для оновлення таблиці.")
         return
+
     file = update.message.document
     if not file.file_name.endswith(".xlsx"):
         await update.message.reply_text("❌ Надішліть файл у форматі Excel (.xlsx)")
         return
+
     await update.message.reply_text("⏳ Завантажую нову таблицю...")
-    new_file = await file.get_file()
-    await new_file.download_to_drive("monitoring.xlsx")
-    df = load_data()
-    await update.message.reply_text("✅ Таблиця оновлена!")
+    try:
+        new_file = await file.get_file()
+        await new_file.download_to_drive("monitoring.xlsx")
+        df = load_data()
+        if df.empty:
+            await update.message.reply_text("❌ Помилка: таблиця порожня або має неправильний формат.")
+        else:
+            await update.message.reply_text("✅ Таблиця успішно оновлена!")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Не вдалося завантажити таблицю: {e}")
 
 async def run_bot():
     print("🚀 run_bot() почався")
@@ -68,9 +90,9 @@ async def run_bot():
     # Повідомлення адміну про запуск
     for admin_id in ADMIN_IDS:
         try:
-            await app.bot.send_message(chat_id=admin_id, text="✅ Бот успішно запущено і працює на Render.")
+            await app.bot.send_message(chat_id=admin_id, text="✅ Бот запущено. Очікує об'єкти для перевірки.")
         except Exception as e:
-            print(f"⚠️ Не вдалося надіслати повідомлення адміну {admin_id}: {e}")
+            print(f"⚠️ Не вдалося надіслати адміну {admin_id}: {e}")
 
     while True:
         try:
