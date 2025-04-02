@@ -50,7 +50,7 @@ async def check_object(update: Update, context: ContextTypes.DEFAULT_TYPE):
         results = []
         for _, row in matches.head(3).iterrows():
             results.append(
-                f"🏗 {row['Об'єкт']}
+                f"🏗 {row[\"Об'єкт\"]}"
 📍 {row['Область']}
 📊 Конкурс: {row['Конкурс (1 - відновлення, 2 закупівлі)']}
 👀 Моніторинг: {row['Хто здійснює моніторинг']}"
