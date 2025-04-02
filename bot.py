@@ -58,11 +58,7 @@ async def check_object(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"👀 Моніторинг: {row['Хто здійснює моніторинг']}"
             )
             results.append(result)
-        await update.message.reply_text(f"🔍 Знайдено:
-
-" + "
-
-".join(results))
+        await update.message.reply_text(f"🔍 Знайдено:" + " ".join(results))
     else:
         await update.message.reply_text("❌ Обʼєкт не знайдено в таблиці.")
 
