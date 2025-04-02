@@ -63,6 +63,7 @@ async def check_object(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Обʼєкт не знайдено в таблиці.")
 
 if __name__ == "__main__":
+    df = load_data()
     async def run_bot():
         while True:
             try:
