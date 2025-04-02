@@ -48,17 +48,12 @@ async def check_object(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not matches.empty:
         results = []
         for _, row in matches.head(3).iterrows():
-            results.append(
-                "Об'єкт: {}
-Область: {}
-Конкурс: {}
-Моніторинг: {}".format(
-                    row["Об'єкт"],
-                    row["Область"],
-                    row["Конкурс (1 - відновлення, 2 закупівлі)"],
-                    row["Хто здійснює моніторинг"]
-                )
-            )
+            results.append("Обʼєкт: {}\nОбласть: {}\nКонкурс: {}\nМоніторинг: {}".format(
+    row["Обʼєкт"],
+    row["Область"],
+    row["Конкурс (1 - відновлення, 2 закупівлі)"],
+    row["Хто здійснює моніторинг"]
+))
         await update.message.reply_text("Знайдено:
 
 " + "
