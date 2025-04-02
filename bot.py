@@ -57,15 +57,26 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("✅ Таблиця оновлена!")
 
 async def run_bot():
+    print("🚀 run_bot() почався")
     app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("id", get_id))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, check_object))
     app.add_handler(MessageHandler(filters.Document.ALL & ~filters.COMMAND, handle_file))
+
+    # Повідомлення адміну про запуск
+    for admin_id in ADMIN_IDS:
+        try:
+            await app.bot.send_message(chat_id=admin_id, text="✅ Бот успішно запущено і працює на Render.")
+        except Exception as e:
+            print(f"⚠️ Не вдалося надіслати повідомлення адміну {admin_id}: {e}")
+
     while True:
         try:
             await app.initialize()
             await app.start()
+            print("✅ Бот працює. Очікує повідомлень...")
             await app.updater.start_polling()
             await app.updater.idle()
         except NetworkError as e:
@@ -73,4 +84,5 @@ async def run_bot():
             await asyncio.sleep(10)
 
 if __name__ == "__main__":
+    print("✅ Бот стартує...")
     asyncio.run(run_bot())
